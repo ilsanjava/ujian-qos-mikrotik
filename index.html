@@ -378,7 +378,7 @@
     const STORAGE_REKAP = "rekap_ujian_qos_tkj_hots";
     const STORAGE_ROSTER = "roster_siswa_tkj";
 
-    // PASTE / GANTI URL WEB APP APPS SCRIPT ANDA DI SINI
+    // URL APPS SCRIPT DARI LINK BARU:
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxBvtg_OyH09MlWyoOaR3w45VaAe117EwQZzM-wO-2xQWQ3H2BIiu1MpaX0nT4ugkSU/exec"; 
 
     const rubrikHOTS = [
@@ -418,7 +418,6 @@
         });
     }
 
-    // Fungsi Utama Impor Data (Mendukung .CSV Offline & .XLSX)
     function importDataSiswa(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -427,7 +426,6 @@
         const statusEl = document.getElementById('importStatus');
         statusEl.innerText = "Memproses berkas...";
 
-        // Opsi 1: Jika file CSV
         if (fileName.endsWith('.csv')) {
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -467,9 +465,7 @@
                 }
             };
             reader.readAsText(file);
-        } 
-        // Opsi 2: Jika file Excel (.xlsx / .xls)
-        else {
+        } else {
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
@@ -515,7 +511,6 @@
         }
     }
 
-    // Fungsi Submit Ujian + Kirim Data ke Google Sheets
     function submitAssessment() {
         sName = document.getElementById('namaSiswaInput').value.trim();
         sClass = document.getElementById('kelasSiswa').value;
@@ -555,10 +550,8 @@
             rincian: scoreDetails.join(' | ')
         };
 
-        // 1. Simpan cadangan di LocalStorage browser
         saveToLocalStorage(payload);
 
-        // 2. Kirim otomatis ke Google Sheets via Apps Script
         const submitBtn = document.querySelector('.btn-submit');
         const originalBtnText = submitBtn.innerText;
         submitBtn.innerText = "Mengirim Jawaban ke Google Sheets...";
