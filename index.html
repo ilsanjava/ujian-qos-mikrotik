@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Ujian HOTS MikroTik QoS - XII TKJ</title>
+    <!-- Library SheetJS untuk Import File Excel (.xlsx / .xls) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f2f5f8;
+            margin: 0;
+            padding: 20px;
+            color: #2c3e50;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        .header-title {
+            text-align: center;
+            color: #1a5276;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #ebf5fb;
+            padding: 12px 20px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            border: 1px solid #d4efdf;
+        }
+        .btn-action {
+            background-color: #2980b9;
+            color: white;
+            padding: 8px 14px;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        .btn-action:hover {
+            background-color: #1f618d;
+        }
+        .btn-print {
+            background-color: #8e44ad;
+            color: white;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"], input[type="password"], select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 90px;
+        }
+        .question-card {
+            background: #fafafa;
+            border-left: 5px solid #2980b9;
+            padding: 18px;
+            margin-bottom: 22px;
+            border-radius: 4px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+        .question-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            line-height: 1.5;
+            color: #1b4f72;
+        }
+        .question-scenario {
+            font-size: 13.5px;
+            color: #4a5568;
+            background: #edf2f7;
+            padding: 10px 12px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+        .btn-submit {
+            background-color: #27ae60;
+            color: white;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+        }
+        .btn-submit:hover {
+            background-color: #219653;
+        }
+        .btn-submit:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        #studentResultBox {
+            display: none;
+            margin-top: 25px;
+            padding: 20px;
+            background: #eaf2f8;
+            border: 1px solid #aed6f1;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 25px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        #teacherDashboard {
+            display: none;
+            margin-top: 30px;
+            background: #fff;
+            padding: 20px;
+            border: 2px solid #2980b9;
+            border-radius: 8px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+        th, td {
+            border: 1px solid #d6dbdf;
+            padding: 8px 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #2980b9;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f8f9f9;
+        }
+        .import-box {
+            background: #f9ebea;
+            border: 1px dashed #c0392b;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        @media print {
+            .top-bar, .btn-submit, #studentResultBox, #teacherDashboard, .modal { display: none !important; }
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="top-bar">
+        <span><b>Portal Ujian MikroTik QoS</b> (XII TKJ 1 - 5)</span>
+        <div>
+            <button class="btn-action btn-print" onclick="window.print()">🖨️ Cetak PDF / Soal</button>
+            <button class="btn-action" onclick="openLoginModal()">🔒 Rekap Guru & Import XLS</button>
+        </div>
+    </div>
+
+    <h1 class="header-title">Ujian Esei HOTS MikroTik QoS</h1>
+    <p class="subtitle">Materi: Bandwidth Management, Queue Types, & Optimization</p>
+
+    <!-- Form Identitas Siswa -->
+    <div class="form-group">
+        <label for="kelasSiswa">Pilih Kelas:</label>
+        <select id="kelasSiswa" onchange="filterSiswaByKelas()">
+            <option value="XII TKJ 1">XII TKJ 1</option>
+            <option value="XII TKJ 2">XII TKJ 2</option>
+            <option value="XII TKJ 3">XII TKJ 3</option>
+            <option value="XII TKJ 4">XII TKJ 4</option>
+            <option value="XII TKJ 5">XII TKJ 5</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="namaSiswaInput">Nama Lengkap Siswa:</label>
+        <input type="text" id="namaSiswaInput" placeholder="Ketik/pilih nama siswa..." list="siswaDatalist">
+        <datalist id="siswaDatalist"></datalist>
+    </div>
+
+    <hr style="margin: 25px 0; border: 0; border-top: 1px solid #e5e8e8;">
+
+    <!-- Form Soal HOTS -->
+    <form id="hotsForm">
+        <!-- Soal 1 -->
+        <div class="question-card">
+            <div class="question-title">1. Analisis Dampak Indikator QoS pada Aplikasi Real-Time vs TCP File Transfer</div>
+            <div class="question-scenario"><b>Studi Kasus:</b> Sebuah lab sekolah mengalami gangguan saat ujian voice/video conference (VoIP) karena audio putus-putus, sementara siswa lain mengunduh file ISO berbasis TCP secara bebas.</div>
+            <label for="ans1">Analisis mengapa paket UDP pada VoIP sangat peka terhadap Latency, Jitter, dan Packet Loss dibandingkan TCP, serta solusinya!</label>
+            <textarea id="ans1" placeholder="Tuliskan analisis Anda..."></textarea>
+        </div>
+
+        <!-- Soal 2 -->
+        <div class="question-card">
+            <div class="question-title">2. Evaluasi Kalkulasi Perilaku Fitur Burst pada Router MikroTik</div>
+            <div class="question-scenario"><b>Studi Kasus:</b> Konfigurasi Simple Queue: Max-Limit = 8 Mbps, Burst-Limit = 20 Mbps, Burst-Threshold = 10 Mbps, Burst-Time = 8 detik.</div>
+            <label for="ans2">Hitung berapa detik client mendapat Burst-Limit (20 Mbps) dan jelaskan penyebab kecepatannya mendadak turun ke Max-Limit (8 Mbps)!</label>
+            <textarea id="ans2" placeholder="Tuliskan analisis hitungan Anda..."></textarea>
+        </div>
+
+        <!-- Soal 3 -->
+        <div class="question-card">
+            <div class="question-title">3. Troubleshooting Fitur Burst / Token Bucket pada Saturated Link</div>
+            <div class="question-scenario"><b>Studi Kasus:</b> Pelanggan mengeluh fitur Burst/Token Bucket tidak pernah memberikan alokasi di atas Max-Limit saat total link dari ISP terpakai 100%.</div>
+            <label for="ans3">Analisis penyebab kegagalan Burst/Token Bucket pada jaringan ini dan syarat wajib dari alokasi ISP agar Burst berfungsi!</label>
+            <textarea id="ans3" placeholder="Tuliskan jawaban analisis Anda..."></textarea>
+        </div>
+
+        <!-- Soal 4 -->
+        <div class="question-card">
+            <div class="question-title">4. Perancangan Arsitektur QoS Perusahaan Menggunakan Queue Tree & Mangle</div>
+            <div class="question-scenario"><b>Studi Kasus:</b> Kebutuhan pembagian bandwidth dinamis berprioritas tinggi untuk 3 divisi kantor (Eksekutif, Keuangan, Staf).</div>
+            <label for="ans4">Evaluasi keterbatasan Simple Queue dan rancanglah integrasi Mangle Packet Marking dengan Queue Tree HTB Hierarchy!</label>
+            <textarea id="ans4" placeholder="Tuliskan rancangan arsitektur Anda..."></textarea>
+        </div>
+
+        <!-- Soal 5 -->
+        <div class="question-card">
+            <div class="question-title">5. Troubleshooting Buffer Bloat & Konsumsi Resource (PFIFO vs BFIFO)</div>
+            <div class="question-scenario"><b>Studi Kasus:</b> Router ber-CPU rendah mengalami pingsan (lag parah) saat Queue Size buffer dinaikkan ke 1000 pada FIFO.</div>
+            <label for="ans5">Jelaskan hubungan Queue Size, Buffer Bloat (lonjakan latency), dan bandingkan efisiensi CPU/RAM antara PFIFO vs BFIFO!</label>
+            <textarea id="ans5" placeholder="Tuliskan analisis Anda..."></textarea>
+        </div>
+
+        <!-- Soal 6 -->
+        <div class="question-card">
+            <div class="question-title">6. Evaluasi Queue Type RED (Random Early Detect) pada Trafik Game Online</div>
+            <div class="question-scenario"><b>Studi Kasus:</b> Game Center mengubah Queue Type ke RED, menyebabkan pemain game mengalami disconnect massal dan lag spike.</div>
+            <label for="ans6">Evaluasi penyebab teknis pengguguran acak RED merusak koneksi UDP game online dan sebutkan Queue Type pengganti yang lebih adil!</label>
+            <textarea id="ans6" placeholder="Tuliskan evaluasi Anda..."></textarea>
+        </div>
+
+        <!-- Soal 7 -->
+        <div class="question-card">
+            <div class="question-title">7. Troubleshooting Masalah Starvation pada SFQ Akibat Aplikasi Torrent</div>
+            <div class="question-scenario"><b>Studi Kasus:</b> Lab sekolah menggunakan SFQ. Saat ada 1 pengguna menjalankan Torrent, pengguna lain mengalami starvation (tidak bisa browsing).</div>
+            <label for="ans7">Analisis keterbatasan 1024 Sub-Queue SFQ saat diserang koneksi torrent dan jelaskan solusinya berbasis PCQ!</label>
+            <textarea id="ans7" placeholder="Tuliskan analisis Anda..."></textarea>
+        </div>
+
+        <!-- Soal 8 -->
+        <div class="question-card">
+            <div class="question-title">8. Koreksi Kesalahan Konfigurasi Classifier PCQ Upload vs Download</div>
+            <div class="question-scenario"><b>Studi Kasus:</b> Siswa mengatur Classifier Src-Address untuk Download dan Dst-Address untuk Upload sehingga pembagian bandwidth menjadi kacau.</div>
+            <label for="ans8">Analisis kesalahan logika penentuan Classifier tersebut dan jelaskan aturan baku Classifier PCQ untuk Upload vs Download!</label>
+            <textarea id="ans8" placeholder="Tuliskan koreksi Anda..."></textarea>
+        </div>
+
+        <!-- Soal 9 -->
+        <div class="question-card">
+            <div class="question-title">9. Kalkulasi & Troubleshooting Total Limit PCQ Skala Besar</div>
+            <div class="question-scenario"><b>Studi Kasus:</b> Gedung dengan 200 client menggunakan PCQ (Limit Sub-Queue = 50 packet), namun Total Limit dibiarkan default 2000 packet.</div>
+            <label for="ans9">Hitung Total Limit PCQ yang ideal berbasis rumus perkalian dan dampak jika Total Limit lebih kecil dari kebutuhan!</label>
+            <textarea id="ans9" placeholder="Tuliskan kalkulasi Anda..."></textarea>
+        </div>
+
+        <!-- Soal 10 -->
+        <div class="question-card">
+            <div class="question-title">10. Analisis Miskonsepsi Target Subnet /24 Simple Queue vs PCQ Rate</div>
+            <div class="question-scenario"><b>Studi Kasus:</b> Admin mengisi Target = 192.168.10.0/24 Max-Limit = 10 Mbps di Simple Queue dengan harapan tiap siswa mendapat 10 Mbps.</div>
+            <label for="ans10">Analisis miskonsepsi shared limit subnet tersebut dan berikan solusi otomatisasi pembagian adil berbasis PCQ Rate!</label>
+            <textarea id="ans10" placeholder="Tuliskan solusi Anda..."></textarea>
+        </div>
+
+        <button type="button" class="btn-submit" onclick="submitAssessment()">Kirim Jawaban & Evaluasi Otomatis</button>
+    </form>
+
+    <!-- Hasil Individu -->
+    <div id="studentResultBox">
+        <h2 id="studentScoreText" style="color: #1b4f72; margin-top:0;">Nilai Akhir HOTS: 0 / 100</h2>
+        <p id="studentDetailText"></p>
+        <p style="font-size: 13px; color: #27ae60; font-weight: bold;">✔ Jawaban berhasil tersimpan dan dikirim ke Google Sheets.</p>
+    </div>
+
+    <!-- Panel Guru Dashboard & Import XLS -->
+    <div id="teacherDashboard">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #2980b9; padding-bottom: 10px;">
+            <h2 style="margin:0; color:#1a5276;">👨‍🏫 Panel Guru: Import XLS & Rekap Nilai</h2>
+            <button onclick="logoutGuru()" style="background:#7f8c8d; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">Logout</button>
+        </div>
+
+        <!-- Box Import Excel/CSV Data Siswa -->
+        <div class="import-box" style="margin-top: 15px;">
+            <h4 style="margin-top:0; color:#c0392b;">📥 Import Roster Data Siswa (.CSV / .XLSX / .XLS)</h4>
+            <p style="font-size:12px; color:#555; margin-bottom:10px;">Pilih file <b>roster_siswa_tkj-v3.csv</b> yang telah diunduh dari panel Studio.</p>
+            <input type="file" id="excelFileInput" accept=".csv, .xlsx, .xls" onchange="importDataSiswa(event)">
+            <p id="importStatus" style="font-size:13px; font-weight:bold; color:#27ae60; margin-top:10px;"></p>
+        </div>
+
+        <h3>📋 Rekapitulasi Hasil Ujian Siswa</h3>
+        <table id="rekapTable">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Waktu Ujian</th>
+                    <th>Nama Siswa</th>
+                    <th>Kelas</th>
+                    <th>Nilai HOTS</th>
+                    <th>Rincian Poin Soal</th>
+                </tr>
+            </thead>
+            <tbody id="rekapTableBody"></tbody>
+        </table>
+
+        <div style="margin-top:15px;">
+            <button class="btn-action" style="background:#27ae60;" onclick="exportToExcel()">📥 Download Rekap Excel (.CSV)</button>
+            <button class="btn-action" style="background:#c0392b;" onclick="clearData()">⚠️ Reset Semua Rekap</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Login Guru -->
+<div id="loginModal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-top:0; color:#1a5276; text-align:center;">🔐 Login Guru</h3>
+        <div class="form-group">
+            <label>Username:</label>
+            <input type="text" id="guruUser" placeholder="Username...">
+        </div>
+        <div class="form-group">
+            <label>Password:</label>
+            <input type="password" id="guruPass" placeholder="Password...">
+        </div>
+        <button onclick="loginGuru()" class="btn-submit" style="background:#2980b9;">Login Guru</button>
+        <button onclick="closeLoginModal()" class="btn-submit" style="background:#e74c3c; margin-top:8px;">Batal</button>
+    </div>
+</div>
+
+<script>
+    const GURU_USER = "guru";
+    const GURU_PASS = "147258369";
+    const STORAGE_REKAP = "rekap_ujian_qos_tkj_hots";
+    const STORAGE_ROSTER = "roster_siswa_tkj";
+
+    // PASTE / GANTI URL WEB APP APPS SCRIPT ANDA DI SINI
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycb.../exec"; 
+
+    const rubrikHOTS = [
+        { id: 1, keywords: ["throughput", "latency", "jitter", "packet loss", "udp", "re-transmit"] },
+        { id: 2, keywords: ["burst-limit", "burst-threshold", "burst-time", "rata-rata", "max-limit", "20", "8"] },
+        { id: 3, keywords: ["cadangan", "overflow", "terbatas", "max-limit", "isp", "100%"] },
+        { id: 4, keywords: ["queue tree", "mangle", "hirarki", "htb", "grouping", "prioritas"] },
+        { id: 5, keywords: ["buffer", "queue size", "pfifo", "latency", "ram", "cpu", "delay"] },
+        { id: 6, keywords: ["red", "random", "udp", "drop", "re-transmit", "pcq", "disconnect"] },
+        { id: 7, keywords: ["sfq", "1024", "sub-queue", "torrent", "koneksi", "pcq", "starvation"] },
+        { id: 8, keywords: ["src-address", "upload", "dst-address", "download", "classifier"] },
+        { id: 9, keywords: ["limit", "total limit", "sub-queue", "perkalian", "200", "10000"] },
+        { id: 10, keywords: ["simple queue", "subnet", "shared", "pcq rate", "otomatis", "10 mbps"] }
+    ];
+
+    let currentScore = 0;
+    let sName = "";
+    let sClass = "";
+    let scoreDetails = [];
+
+    window.onload = function() {
+        filterSiswaByKelas();
+    };
+
+    function filterSiswaByKelas() {
+        const selectedKelas = document.getElementById('kelasSiswa').value;
+        const datalist = document.getElementById('siswaDatalist');
+        datalist.innerHTML = '';
+
+        const rosterData = JSON.parse(localStorage.getItem(STORAGE_ROSTER)) || [];
+        const filtered = rosterData.filter(item => item.kelas === selectedKelas);
+
+        filtered.forEach(item => {
+            const opt = document.createElement('option');
+            opt.value = item.nama;
+            datalist.appendChild(opt);
+        });
+    }
+
+    // Fungsi Utama Impor Data (Mendukung .CSV Offline & .XLSX)
+    function importDataSiswa(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const fileName = file.name.toLowerCase();
+        const statusEl = document.getElementById('importStatus');
+        statusEl.innerText = "Memproses berkas...";
+
+        // Opsi 1: Jika file CSV
+        if (fileName.endsWith('.csv')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const text = e.target.result;
+                    const lines = text.split(/\r\n|\n/);
+                    let importedRoster = [];
+
+                    for (let i = 0; i < lines.length; i++) {
+                        const line = lines[i].trim();
+                        if (!line) continue;
+
+                        const cols = line.split(/[,;]/);
+                        if (cols.length >= 2) {
+                            const nama = cols[0].replace(/^["']|["']$/g, '').trim();
+                            const kelas = cols[1].replace(/^["']|["']$/g, '').trim();
+
+                            if (nama.toLowerCase().includes('nama') || kelas.toLowerCase().includes('kelas')) continue;
+
+                            if (nama && kelas) {
+                                importedRoster.push({ nama: nama, kelas: kelas });
+                            }
+                        }
+                    }
+
+                    if (importedRoster.length > 0) {
+                        localStorage.setItem(STORAGE_ROSTER, JSON.stringify(importedRoster));
+                        statusEl.innerText = `✔ Berhasil mengimpor ${importedRoster.length} data siswa dari file CSV!`;
+                        filterSiswaByKelas();
+                    } else {
+                        alert("Format CSV kurang sesuai. Pastikan Kolom 1 = Nama dan Kolom 2 = Kelas!");
+                        statusEl.innerText = "";
+                    }
+                } catch (err) {
+                    alert("Gagal membaca file CSV: " + err.message);
+                    statusEl.innerText = "";
+                }
+            };
+            reader.readAsText(file);
+        } 
+        // Opsi 2: Jika file Excel (.xlsx / .xls)
+        else {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    if (typeof XLSX === 'undefined') {
+                        alert("Library SheetJS belum siap. Gunakan file roster_siswa_tkj-v3.csv untuk impor instan!");
+                        statusEl.innerText = "";
+                        return;
+                    }
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+                    let importedRoster = [];
+                    for (let i = 0; i < jsonData.length; i++) {
+                        const row = jsonData[i];
+                        if (row && row.length >= 2) {
+                            const nama = String(row[0]).trim();
+                            const kelas = String(row[1]).trim();
+
+                            if (nama.toLowerCase().includes('nama') || kelas.toLowerCase().includes('kelas')) continue;
+
+                            if (nama && kelas) {
+                                importedRoster.push({ nama: nama, kelas: kelas });
+                            }
+                        }
+                    }
+
+                    if (importedRoster.length > 0) {
+                        localStorage.setItem(STORAGE_ROSTER, JSON.stringify(importedRoster));
+                        statusEl.innerText = `✔ Berhasil mengimpor ${importedRoster.length} data siswa dari Excel!`;
+                        filterSiswaByKelas();
+                    } else {
+                        alert("Tidak ada data siswa yang valid dalam file Excel.");
+                        statusEl.innerText = "";
+                    }
+                } catch (err) {
+                    alert("Gagal membaca file Excel: " + err.message);
+                    statusEl.innerText = "";
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+    }
+
+    // Fungsi Submit Ujian + Kirim Data ke Google Sheets
+    function submitAssessment() {
+        sName = document.getElementById('namaSiswaInput').value.trim();
+        sClass = document.getElementById('kelasSiswa').value;
+
+        if (!sName) {
+            alert("Harap isi/pilih Nama Lengkap Siswa terlebih dahulu!");
+            return;
+        }
+
+        currentScore = 0;
+        scoreDetails = [];
+
+        rubrikHOTS.forEach((item) => {
+            const ansText = document.getElementById(`ans${item.id}`).value.toLowerCase();
+            let matchedKW = 0;
+
+            item.keywords.forEach(kw => {
+                if (ansText.includes(kw.toLowerCase())) matchedKW++;
+            });
+
+            let qScore = (matchedKW / item.keywords.length) * 10;
+            if (qScore > 10) qScore = 10;
+            
+            currentScore += qScore;
+            scoreDetails.push(`S${item.id}: ${qScore.toFixed(1)}`);
+        });
+
+        document.getElementById('studentScoreText').innerText = `Nilai Akhir HOTS: ${currentScore.toFixed(1)} / 100`;
+        document.getElementById('studentDetailText').innerText = `Siswa: ${sName} (${sClass})`;
+        document.getElementById('studentResultBox').style.display = 'block';
+
+        const payload = {
+            timestamp: new Date().toLocaleString('id-ID'),
+            nama: sName,
+            kelas: sClass,
+            nilai: currentScore.toFixed(1),
+            rincian: scoreDetails.join(' | ')
+        };
+
+        // 1. Simpan cadangan di LocalStorage browser
+        saveToLocalStorage(payload);
+
+        // 2. Kirim otomatis ke Google Sheets via Apps Script
+        const submitBtn = document.querySelector('.btn-submit');
+        const originalBtnText = submitBtn.innerText;
+        submitBtn.innerText = "Mengirim Jawaban ke Google Sheets...";
+        submitBtn.disabled = true;
+
+        fetch(GOOGLE_SCRIPT_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: {
+                "Content-Type": "text/plain;charset=utf-8"
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(() => {
+            alert("Jawaban & Nilai berhasil dikirim ke Google Sheets Guru!");
+        })
+        .catch(err => {
+            console.error("Gagal mengirim ke Google Sheets:", err);
+            alert("Gagal mengirim data ke server. Namun, nilai Anda tetap tersimpan di browser ini.");
+        })
+        .finally(() => {
+            submitBtn.innerText = originalBtnText;
+            submitBtn.disabled = false;
+        });
+
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+
+    function saveToLocalStorage(record) {
+        let currentData = JSON.parse(localStorage.getItem(STORAGE_REKAP)) || [];
+        currentData.push(record);
+        localStorage.setItem(STORAGE_REKAP, JSON.stringify(currentData));
+    }
+
+    function openLoginModal() { document.getElementById('loginModal').style.display = 'block'; }
+    function closeLoginModal() { document.getElementById('loginModal').style.display = 'none'; }
+
+    function loginGuru() {
+        const u = document.getElementById('guruUser').value.trim();
+        const p = document.getElementById('guruPass').value.trim();
+
+        if (u === GURU_USER && p === GURU_PASS) {
+            closeLoginModal();
+            document.getElementById('teacherDashboard').style.display = 'block';
+            loadRekapTable();
+            window.scrollTo({ top: document.getElementById('teacherDashboard').offsetTop, behavior: 'smooth' });
+        } else {
+            alert("Username/Password Guru SALAH!");
+        }
+    }
+
+    function logoutGuru() {
+        document.getElementById('teacherDashboard').style.display = 'none';
+        document.getElementById('guruUser').value = '';
+        document.getElementById('guruPass').value = '';
+    }
+
+    function loadRekapTable() {
+        const data = JSON.parse(localStorage.getItem(STORAGE_REKAP)) || [];
+        const tbody = document.getElementById('rekapTableBody');
+        tbody.innerHTML = '';
+
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#999;">Belum ada rekap nilai siswa.</td></tr>';
+            return;
+        }
+
+        data.forEach((row, idx) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${idx + 1}</td>
+                <td>${row.timestamp}</td>
+                <td><b>${row.nama}</b></td>
+                <td>${row.kelas}</td>
+                <td><b>${row.nilai}</b></td>
+                <td style="font-size:11px; color:#555;">${row.rincian}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function exportToExcel() {
+        const data = JSON.parse(localStorage.getItem(STORAGE_REKAP)) || [];
+        if (data.length === 0) { alert("Belum ada data untuk diunduh!"); return; }
+
+        let csv = "\uFEFF";
+        csv += "No,Waktu Pengerjaan,Nama Siswa,Kelas,Nilai Akhir HOTS,Rincian Poin\n";
+        data.forEach((row, idx) => {
+            csv += `"${idx + 1}","${row.timestamp}","${row.nama}","${row.kelas}",${row.nilai},"${row.rincian}"\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `Rekap_Ujian_HOTS_QoS_Guru.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function clearData() {
+        if (confirm("Apakah Anda yakin ingin MENGHAPUS SEMUA REKAP NILAI siswa?")) {
+            localStorage.removeItem(STORAGE_REKAP);
+            loadRekapTable();
+        }
+    }
+</script>
+
+</body>
+</html>
